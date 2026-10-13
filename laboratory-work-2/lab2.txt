@@ -1,0 +1,351 @@
+CREATE TABLE airline_info (
+	airline_id INT PRIMARY KEY NOT NULL,
+	airline_code VARCHAR(30) NOT NULL,
+	airline_name VARCHAR(50) NOT NULL,
+	airline_country VARCHAR(50) NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL,
+	info VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE airport (
+	airport_id INT PRIMARY KEY NOT NULL,
+	airport_name VARCHAR(50) NOT NULL,
+	country VARCHAR(50) NOT NULL,
+	state VARCHAR(50) NOT NULL,
+	city VARCHAR(50) NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE baggage_check (
+	baggage_check_id INT PRIMARY KEY NOT NULL,
+	check_result VARCHAR(50) NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL,
+	booking_id INT NOT NULL,
+	passenger_id INT NOT NULL
+);
+
+CREATE TABLE baggage (
+	baggage_id INT PRIMARY KEY NOT NULL,
+	weight_in_kg DECIMAL(4, 2) NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL,
+	booking_id INT NOT NULL
+);
+
+CREATE TABLE boarding_pass (
+	boarding_pass_id INT PRIMARY KEY NOT NULL,
+	booking_id INT NOT NULL,
+	seat VARCHAR(50) NOT NULL,
+	boarding_time TIMESTAMP NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE booking_flight (
+	booking_flight_id INT PRIMARY KEY NOT NULL,
+	booking_id INT NOT NULL,
+	flight_id INT NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE booking (
+	booking_id INT PRIMARY KEY NOT NULL,
+	flight_id INT NOT NULL,
+	passenger_id INT NOT NULL,
+	booking_platform VARCHAR(50) NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL,
+	status VARCHAR(50) NOT NULL,
+	price DECIMAL(7, 2) NOT NULL
+);
+
+CREATE TABLE flights (
+	flight_id INT PRIMARY KEY NOT NULL,
+	sch_departure_time TIMESTAMP NOT NULL,
+	sch_arrival_time TIMESTAMP NOT NULL,
+	departing_airport_id INT NOT NULL,
+	arriving_airport_id INT NOT NULL,
+	departing_gate VARCHAR(50) NOT NULL,
+	arriving_gate VARCHAR(50) NOT NULL,
+	airline_id INT NOT NULL,
+	act_departure_time TIMESTAMP NOT NULL,
+	act_arrival_time TIMESTAMP NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE passengers (
+	passenger_id INT PRIMARY KEY NOT NULL,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+	date_of_birth DATE NOT NULL,
+	gender VARCHAR(50) NOT NULL,
+	country_of_citizenship VARCHAR(50) NOT NULL,
+	country_of_residence VARCHAR(50) NOT NULL,
+	passport_number VARCHAR(20) NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE security_check (
+	security_check_id INT PRIMARY KEY NOT NULL,
+	check_result VARCHAR(20) NOT NULL,
+	created_at TIMESTAMP NOT NULL,
+	updated_at TIMESTAMP NOT NULL,
+	passenger_id INT NOT NULL
+);
+
+ALTER TABLE airline_info RENAME TO airline;
+ALTER TABLE flights ALTER COLUMN departing_gate TYPE TEXT;
+ALTER TABLE airline DROP COLUMN info;
+ALTER TABLE security_check ADD CONSTRAINT fk_security_passenger FOREIGN KEY (passenger_id) REFERENCES passengers(passenger_id);
+
+ALTER TABLE booking ADD CONSTRAINT fk_booking_passenger FOREIGN KEY (passenger_id) REFERENCES passengers(passenger_id);
+
+ALTER TABLE baggage_check ADD CONSTRAINT fk_baggage_check_passenger FOREIGN KEY (passenger_id) REFERENCES passengers(passenger_id);
+
+ALTER TABLE baggage_check ADD CONSTRAINT fk_baggage_check_booking FOREIGN KEY (booking_id) REFERENCES booking(booking_id);
+
+ALTER TABLE baggage ADD CONSTRAINT fk_baggage_booking FOREIGN KEY (booking_id) REFERENCES booking(booking_id);
+
+ALTER TABLE boarding_pass ADD CONSTRAINT fk_boarding_pass_booking FOREIGN KEY (booking_id) REFERENCES booking(booking_id);
+
+ALTER TABLE booking_flight ADD CONSTRAINT fk_booking_flight_booking FOREIGN KEY (booking_id) REFERENCES booking(booking_id);
+
+ALTER TABLE booking_flight ADD CONSTRAINT fk_booking_flight_flight FOREIGN KEY (flight_id) REFERENCES flights(flight_id);
+
+ALTER TABLE flights ADD CONSTRAINT fk_flights_departing_airport FOREIGN KEY (departing_airport_id) REFERENCES airport(airport_id);
+
+ALTER TABLE flights ADD CONSTRAINT fk_flights_arriving_airport FOREIGN KEY (arriving_airport_id) REFERENCES airport(airport_id);
+
+ALTER TABLE flights ADD CONSTRAINT fk_flights_airline FOREIGN KEY (airline_id) REFERENCES airline(airline_id);
+
+INSERT INTO airline
+	(airline_id, airline_code, airline_name, airline_country, created_at, updated_at)
+VALUES
+	(1, 'KC', 'Air Astana', 'Kazakhstan', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(2, 'FS', 'Fly Arystan', 'Kazakhstan', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(3, 'LH', 'Lufthansa', 'Germany', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(4, 'TK', 'Turkish Airlines', 'Turkey', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(5, 'EK', 'Emirates', 'United Arab Emirates', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO airport
+	(airport_id, airport_name, country, state, city, created_at, updated_at)
+VALUES
+	(1, 'Almaty International Airport', 'Kazakhstan', 'Almaty', 'Almaty', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(2, 'Nursultan Nazarbaev International Airport', 'Kazakhstan', 'Astana', 'Astana', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(3, 'Frankfurt Airport', 'Germany', 'Hesse', 'Frankfurt', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(4, 'Istanbul Airport', 'Turkey', 'Istanbul', 'Istanbul', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(5, 'Dubai International Airport', 'United Arab Emirates', 'Dubai', 'Dubai', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO passengers
+	(passenger_id, first_name, last_name, date_of_birth, gender, country_of_citizenship, country_of_residence, passport_number, created_at, updated_at)
+VALUES
+	(1, 'Aibek', 'Nurgaliev', '1995-03-15', 'Male', 'Kazakhstan', 'Kazakhstan', 'KZ1234567', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(2, 'Aruzhan', 'Saparova', '1998-07-22', 'Female', 'Kazakhstan', 'Kazakhstan', 'KZ2345678', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(3, 'Dias', 'Qassymov', '1992-11-10', 'Male', 'Kazakhstan', 'Germany', 'KZ3456789', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(4, 'Madina', 'Omarova', '2000-01-30', 'Female', 'Kazakhstan', 'Turkey', 'KZ4567890', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(5, 'Timur', 'Bekov', '1990-09-05', 'Male', 'Kazakhstan', 'Kazakhstan', 'KZ5678901', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO flights (
+	flight_id,
+	sch_departure_time,
+	sch_arrival_time,
+	departing_airport_id,
+	arriving_airport_id,
+	departing_gate,
+	arriving_gate,
+	airline_id,
+	act_departure_time,
+	act_arrival_time,
+	created_at,
+	updated_at
+) VALUES 
+	(1, '2026-09-21 08:00:00', '2026-09-21 09:30:00', 1, 2, 'A1', 'B2', 1, '2026-09-21 08:10:00', '2026-09-21 08:10:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(2, '2026-09-21 10:00:00', '2026-09-21 13:00:00', 2, 3, 'C1', 'D2', 2, '2026-09-21 10:05:00', '2026-09-21 13:10:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(3, '2026-09-22 07:30:00', '2026-09-22 10:30:00', 3, 4, 'E1', 'F2', 3, '2026-09-22 07:40:00', '2026-09-22 10:35:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(4, '2026-09-22 14:00:00', '2026-09-22 17:00:00', 4, 5, 'G1', 'H2', 4, '2026-09-22 14:05:00', '2026-09-22 17:10:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(5, '2026-09-23 18:00:00', '2026-09-23 21:00:00', 5, 1, 'J1', 'K2', 5, '2026-09-23 18:15:00', '2026-09-23 21:10:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO booking (
+	booking_id,
+	flight_id,
+	passenger_id,
+	booking_platform,
+	created_at,
+	updated_at,
+	status,
+	price
+) VALUES 
+	(1, 1, 1, 'Website', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'Confirmed', 150.00
+),
+	(2, 2, 2, 'Mobile App', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'Confirmed', 220.00),
+	(3, 3, 3, 'Website', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'Pending', 350.00),
+	(4, 4, 4, 'Travel Agency', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'Confirmed', 450.00),
+	(5, 5, 5, 'Mobile App', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'Cancelled', 500.00);
+
+INSERT INTO booking_flight (
+	booking_flight_id,
+	booking_id,
+	flight_id,
+	created_at,
+	updated_at
+) VALUES 
+	(1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(2, 2, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(3, 3, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(4, 4, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(5, 5, 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+
+INSERT INTO baggage (
+	baggage_id,
+	weight_in_kg,
+	created_at,
+	updated_at,
+	booking_id
+) VALUES 
+	(1, 18.50, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+	(2, 22.30, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
+	(3, 15.75, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3),
+	(4, 25.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4),
+	(5, 19.20, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5);
+
+INSERT INTO baggage_check (
+	baggage_check_id,
+	check_result,
+	created_at,
+	updated_at,
+	booking_id,
+	passenger_id
+) VALUES 
+	(1, 'Passed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 1),
+	(2, 'Passed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2, 2),
+	(3, 'Passed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3, 3),
+	(4, 'Passed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4, 4),
+	(5, 'Passed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5, 5);
+
+INSERT INTO boarding_pass (
+	boarding_pass_id,
+	booking_id,
+	seat,
+	boarding_time,
+	created_at,
+	updated_at
+) VALUES 
+	(1, 1, '12A', '2026-09-21 07:30:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(2, 2, '14B', '2026-09-21 09:30:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(3, 3, '16C', '2026-09-22 07:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(4, 4, '18D', '2026-09-22 13:30:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+	(5, 5, '20E', '2026-09-23 17:30:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO security_check (
+	security_check_id,
+	check_result,
+	created_at,
+	updated_at,
+	passenger_id
+) VALUES 
+	(1, 'Passed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+	(2, 'Passed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
+	(3, 'Passed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3),
+	(4, 'Passed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4),
+	(5, 'Passed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5);
+
+#########
+CREATE TABLE airline_3nf (
+	airline_id INT PRIMARY KEY NOT NULL,
+	airline_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE airport_3nf (
+	airport_id INT PRIMARY KEY NOT NULL,
+	airport_name VARCHAR(50) NOT NULL,
+	city VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE passenger_3nf (
+	passenger_passport_number VARCHAR(20) PRIMARY KEY NOT NULL,
+	passenger_full_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE flight_3nf (
+	flight_number VARCHAR(30) PRIMARY KEY NOT NULL,
+	departure_airport_id INT NOT NULL,
+	arrival_airport_id INT NOT NULL,
+	airline_id INT NOT NULL,
+	FOREIGN KEY (departure_airport_id) REFERENCES airport_3nf(airport_id),
+	FOREIGN KEY (arrival_airport_id) REFERENCES airport_3nf(airport_id),
+	FOREIGN KEY (airline_id) REFERENCES airline_3nf(airline_id)
+);
+
+CREATE TABLE booking_3nf (
+	booking_id INT PRIMARY KEY NOT NULL,
+	flight_number VARCHAR(30) NOT NULL,
+	ticket_price DECIMAL(7, 2) NOT NULL,
+	FOREIGN KEY (flight_number) REFERENCES flight_3nf(flight_number)
+);
+
+CREATE TABLE booking_passenger_3nf (
+	booking_id INT NOT NULL,
+	passenger_passport_number VARCHAR(20) NOT NULL,
+	seat_number VARCHAR(10) NOT NULL,
+	PRIMARY KEY (booking_id, passenger_passport_number),
+	FOREIGN KEY (booking_id) REFERENCES booking_3nf(booking_id),
+	FOREIGN KEY (passenger_passport_number)
+		REFERENCES passenger_3nf(passenger_passport_number)
+);
+
+INSERT INTO airline_3nf (airline_id, airline_name) VALUES
+(1, 'Air Astana'),
+(2, 'FlyArystan'),
+(3, 'Lufthansa'),
+(4, 'Turkish Airlines'),
+(5, 'Emirates');
+
+INSERT INTO airport_3nf (airport_id, airport_name, city) VALUES
+(1, 'Almaty International Airport', 'Almaty'),
+(2, 'Nursultan Nazarbayev International Airport', 'Astana'),
+(3, 'Frankfurt Airport', 'Frankfurt'),
+(4, 'Istanbul Airport', 'Istanbul'),
+(5, 'Dubai International Airport', 'Dubai');
+
+INSERT INTO passenger_3nf (passenger_passport_number, passenger_full_name) 
+VALUES 
+('KZ1234567', 'Aibek Nurgaliyev'),
+('KZ2345678', 'Aruzhan Saparova'),
+('KZ3456789', 'Dias Qassymov'),
+('KZ4567890', 'Madina Omarova'),
+('KZ5678901', 'Timur Bekov');
+
+INSERT INTO flight_3nf (flight_number, departure_airport_id, arrival_airport_id, airline_id) VALUES 
+('KC101', 1, 2, 1),
+('KC102', 2, 3, 2),
+('LH201', 3, 4, 3),
+('TK301', 4, 5, 4),
+('EK401', 5, 1, 5);
+
+INSERT INTO booking_3nf(booking_id, flight_number, ticket_price) VALUES
+(1, 'KC101', 150.00),
+(2, 'KC102', 220.00),
+(3, 'LH201', 350.00),
+(4, 'TK301', 450.00),
+(5, 'EK401', 500.00);
+
+INSERT INTO booking_passenger_3nf (booking_id, passenger_passport_number,
+seat_number) VALUES
+(1, 'KZ1234567', '12A'),
+(2, 'KZ2345678', '14B'),
+(3, 'KZ3456789', '16C'),
+(4, 'KZ4567890', '18D'),
+(5, 'KZ5678901', '20E');
+
+
+
+
+
+	

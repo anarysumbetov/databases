@@ -1,0 +1,188 @@
+--1)
+INSERT INTO airport (
+	airport_id,
+	airport_name,
+	country,
+	state,
+	city,
+	created_at,
+	updated_at
+)
+SELECT 
+	m.max_id + gs,
+	'Airport_' || gs,
+	'Country_' || gs,
+	'State_' || gs,
+	'City_' || gs,
+	CURRENT_TIMESTAMP,
+	CURRENT_TIMESTAMP
+FROM generate_series(1, 200) AS gs
+CROSS JOIN (SELECT COALESCE(MAX(airport_id), 0) AS max_id FROM airport) m;
+
+SELECT COUNT(*) FROM airport;
+
+--2)
+INSERT INTO airline (
+	airline_id,
+	airline_code,
+	airline_name,
+	airline_country,
+	created_at,
+	updated_at
+) 
+SELECT
+	COALESCE(MAX(airline_id), 0) + 1,
+	'KAZ',
+	'KazAir',
+	'Kazakhstan',
+	CURRENT_TIMESTAMP,
+	CURRENT_TIMESTAMP
+FROM airline;
+
+SELECT * FROM airline WHERE airline_name = 'KazAir';
+
+--3)
+UPDATE airline SET airline_country = 'Turkey' WHERE airline_name = 'KazAir';
+
+SELECT * FROM airline WHERE airline_name = 'KazAir';
+
+--4)
+INSERT INTO airline (
+	airline_id,
+	airline_code,
+	airline_name,
+	airline_country,
+	created_at,
+	updated_at
+)
+SELECT 
+	m.max_id + 1,
+	'AE',
+	'AirEasy',
+	'France',
+	CURRENT_TIMESTAMP,
+	CURRENT_TIMESTAMP
+FROM (SELECT COALESCE(MAX(airline_id), 0) AS max_id FROM airline) m
+UNION ALL
+SELECT
+	m.max_id + 3,
+	'FF',
+	'FlyFly',
+	'Poland',
+	CURRENT_TIMESTAMP,
+	CURRENT_TIMESTAMP
+FROM (SELECT COALESCE(MAX(airline_id), 0) AS max_id FROM airline) m;
+
+SELECT airline_id, airline_code, airline_name, airline_country
+FROM airline
+WHERE airline_name IN ('AirEasy', 'FLyHigh', 'FlyFly');
+
+--5)
+SELECT COUNT(*)
+FROM flights
+WHERE sch_arrival_time >= '2024-01-01'
+	AND sch_arrival_time < '2025-01-01';
+
+--6)
+UPDATE booking SET price = price * 1.15;
+SELECT booking_id, price FROM booking;
+
+--7)
+DELETE FROM baggage_check WHERE booking_id IN (SELECT booking_id FROM booking WHERE price < 10000);
+DELETE FROM baggage WHERE booking_id IN (SELECT booking_id FROM booking WHERE price < 10000);
+DELETE FROM boarding_pass WHERE booking_id IN (SELECT booking_id FROM booking WHERE price < 10000);
+DELETE FROM booking_flight WHERE booking_id IN (SELECT booking_id FROM booking WHERE price < 10000);
+DELETE FROM booking WHERE price < 10000;
+
+--8)
+UPDATE airline SET airline_code = 'UNK' WHERE airline_code IS NULL;
+
+--9)
+SELECT * FROM baggage_check WHERE created_at < '2023-06-01'
+	AND check_result = 'Not checked';
+DELETE FROM baggage_check
+WHERE created_at < '2023-06-01'
+	AND check_result = 'Not checked';
+
+--10)
+DELETE FROM airport
+WHERE state IS NULL
+	AND city IN ('Mlawe', 'Kepuh');
+
+--11)
+INSERT INTO booking (
+	booking_id,
+	flight_id,
+	passenger_id,
+	booking_platform,
+	created_at,
+	updated_at,
+	status,
+	price
+) VALUES (
+	999,
+	1,
+	1,
+	'Website',
+	CURRENT_TIMESTAMP,
+	CURRENT_TIMESTAMP,
+	'Confirmed',
+	15000.00
+) ON CONFLICT (booking_id) DO NOTHING;
+
+INSERT INTO baggage_check (
+	baggage_check_id,
+	check_result,
+	created_at,
+	updated_at,
+	booking_id,
+	passenger_id
+)
+VALUES (
+	(SELECT COALESCE(MAX(baggage_check_id), 0) + 1 FROM baggage_check),
+	'Passed',
+	CURRENT_TIMESTAMP,
+	CURRENT_TIMESTAMP,
+	999,
+	1
+)
+RETURNING baggage_check_id, created_at;
+
+--12)
+UPDATE airline
+SET airline_country = UPPER(airline_country);
+SELECT airline_id, airline_name, airline_country
+FROM airline;
+
+--13)
+UPDATE airline
+SET 
+	airline_name = 'Global Airways',
+	airline_country = 'United Kingdom',
+	updated_at = CURRENT_TIMESTAMP
+WHERE airline_id = 5;
+
+SELECT airline_id, airline_name, airline_country, updated_at
+FROM airline
+WHERE airline_id = 5;
+
+--14)
+UPDATE airport
+SET state = 'Capital District'
+WHERE city IN ('Astana', 'London', 'Tokyo');
+SELECT airport_id, airport_name, state, city
+FROM airport
+WHERE city IN ('Astana', 'London', 'Tokyo');
+
+
+--15)
+UPDATE baggage_check
+SET check_result = 'Checked'
+WHERE created_at >= '2024-03-01'
+	AND created_at < '2024-04-01'
+	AND check_result = 'Not checked'; 
+
+SELECT baggage_check_id, check_result, created_at
+FROM baggage_check
+WHERE created_at >= '2024-03-01'
+	AND created_at < '2024-04-01';

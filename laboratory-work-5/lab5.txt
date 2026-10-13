@@ -1,0 +1,122 @@
+--1)
+ALTER TABLE public.passengers DROP CONSTRAINT IF EXISTS chk_passengers_age;
+ALTER TABLE passengers
+ADD CONSTRAINT chk_passengers_age
+CHECK (date_of_birth <= CURRENT_DATE - INTERVAL '10 years');
+
+--2)
+ALTER TABLE public.booking DROP CONSTRAINT IF EXISTS chk_booking_price;
+ALTER TABLE public.booking
+ADD CONSTRAINT chk_booking_price
+CHECK (price > 0 AND price <= 50000);
+
+--3)
+ALTER TABLE public.baggage DROP CONSTRAINT IF EXISTS chk_baggage_weight;
+ALTER TABLE public.baggage
+ADD CONSTRAINT chk_baggage_weight
+CHECK (weight_in_kg BETWEEN 1 AND 23);
+
+--4)
+UPDATE public.airport 
+SET airport_name = airport_name || '_' 
+WHERE LENGTH(airport_name) < 10;
+
+ALTER TABLE public.airport DROP CONSTRAINT IF EXISTS chk_airport_name_length;
+ALTER TABLE public.airport
+ADD CONSTRAINT chk_airport_name_length
+CHECK (LENGTH(airport_name) >= 10);
+
+--5)
+ALTER TABLE public.passengers DROP CONSTRAINT IF EXISTS uq_passengers_passport;
+ALTER TABLE public.passengers
+ADD CONSTRAINT uq_passengers_passport
+UNIQUE (passport_number);
+
+ALTER TABLE public.booking DROP CONSTRAINT IF EXISTS uq_booking_passenger_flight;
+ALTER TABLE public.booking
+ADD CONSTRAINT uq_booking_passenger_flight
+UNIQUE (passenger_id, flight_id);
+
+ALTER TABLE public.baggage DROP CONSTRAINT IF EXISTS uq_baggage_id;
+ALTER TABLE public.baggage
+ADD CONSTRAINT uq_baggage_id
+UNIQUE (baggage_id);
+
+UPDATE public.airport
+SET airport_name = airport_name || '_ID_' || airport_id
+WHERE airport_name IN (
+    SELECT airport_name 
+    FROM public.airport 
+    GROUP BY airport_name 
+    HAVING COUNT(*) > 1
+);
+
+ALTER TABLE public.airport DROP CONSTRAINT IF EXISTS uq_airport_name;
+ALTER TABLE public.airport
+ADD CONSTRAINT uq_airport_name
+UNIQUE (airport_name);
+
+ALTER TABLE public.baggage_check DROP CONSTRAINT IF EXISTS uq_baggage_check_id;
+ALTER TABLE public.baggage_check
+ADD CONSTRAINT uq_baggage_check_id
+UNIQUE (baggage_check_id);
+
+--6)
+ALTER TABLE public.passengers DROP CONSTRAINT IF EXISTS chk_gender_age;
+ALTER TABLE public.passengers
+ADD CONSTRAINT chk_gender_age
+CHECK (
+	(gender = 'Male'
+	AND date_of_birth <= CURRENT_DATE - INTERVAL '18 years')
+	OR
+	(gender = 'Female'
+	AND date_of_birth <= CURRENT_DATE - INTERVAL '19 years')
+);
+
+--7)
+ALTER TABLE public.passengers DROP CONSTRAINT IF EXISTS chk_citizenship_age;
+ALTER TABLE public.passengers
+ADD CONSTRAINT chk_citizenship_age
+CHECK (
+	(
+		country_of_citizenship = 'Kazakhstan'
+		AND date_of_birth <= CURRENT_DATE - INTERVAL '18 years'
+	)
+	OR
+	(
+		country_of_citizenship = 'France'
+		AND date_of_birth <= CURRENT_DATE - INTERVAL '17 years'
+	)
+	OR
+	(
+		country_of_citizenship NOT IN ('Kazakhstan', 'France')
+		AND date_of_birth <= CURRENT_DATE - INTERVAL '19 years'
+	)
+);
+--8)
+ALTER TABLE public.booking DROP COLUMN IF EXISTS ticket_discount;
+ALTER TABLE public.booking ADD COLUMN ticket_discount NUMERIC(5, 2);
+
+ALTER TABLE public.booking
+ADD CONSTRAINT chk_booking_ticket_discount
+CHECK (
+	(
+		created_at > TIMESTAMP '2024-01-01'
+		AND ticket_discount = 5
+	)
+	OR
+	(
+		created_at < TIMESTAMP '2024-01-01'
+		AND ticket_discount = 10
+	)
+);
+
+--9)
+ALTER TABLE public.booking
+ALTER COLUMN status SET DEFAULT 'Confirmed';
+
+--10)
+ALTER TABLE public.booking
+ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
+
+
