@@ -1,0 +1,187 @@
+--1)
+SELECT
+	f.flight_id,
+	a.airline_name,
+	f.sch_departure_time,
+	f.sch_arrival_time
+FROM flights f
+JOIN airline a
+	ON f.airline_id = a.airline_id
+WHERE a.airline_name = 'Air Astana';
+--2)
+SELECT
+	f.flight_id,
+	f.sch_departure_time,
+	f.sch_arrival_time,
+	a.airport_name AS departure_airport
+FROM flights f
+JOIN airport a
+	ON f.departing_airport_id = a.airport_id;
+--3)
+SELECT
+	a.airline_id,
+	a.airline_name,
+FROM airline a
+LEFT JOIN flights f
+	ON a.airline_id = f.airline_id
+	AND f.sch_departure_time >= DATE_TRUNC('month', CURRENT_DATE)
+		+ INTERVAL '1 month'
+	AND f.sch_departure_time < DATE_TRUNC('month', CURRENT_DATE)
+		+ INTERVAL '2 months'
+WHERE f.flight_id IS NULL;
+--4)
+SELECT
+	p.passenger_id,
+	p.first_name,
+	p.last_name,
+	p.passport_number,
+	b.flight_id,
+	b.booking_id
+FROM passengers p
+JOIN booking b
+	ON p.passenger_id = b.passenger_id
+JOIN flights f
+	ON b.flight_id = f.flight_id
+WHERE f.flight_id = 1;
+--5)
+SELECT
+	f.flight_id,
+	AVG(b.ticket_price) AS average_price,
+	SUM(b.ticket_price) AS total_price,
+	MAX(b.ticket_price) AS maximum_price,
+	MIN(b.ticket_price) AS minimum_price
+FROM flights f
+LEFT JOIN booking b
+	ON f.flight_id = b.flight_id
+GROUP BY f.flight_id
+ORDER BY f.flight_id;
+--6)
+SELECT
+	f.flight_id,
+	al.airline_name,
+	dep.airport_name AS departure_airport,
+	arr.airport_name AS arrival_airport,
+	arr.country AS destination_country
+FROM flights f
+JOIN airline al
+	ON f.airline_id = al.airline_id
+JOIN airport dep
+	ON f.departing_airport_id = dep.airport_id
+JOIN airport arr
+	ON f.arriving_airport_id = arr.airport_id
+WHERE arr.country = 'Germany';
+--7)
+SELECT
+	p.passenger_id,
+	p.first_name,
+	p.last_name,
+	p.date_of_birth,
+	arr.airport_name AS arrival_airport,
+	arr.country AS arrival_country
+FROM passengers p
+JOIN booking b
+	ON p.passenger_id = b.passenger_id
+JOIN flights f
+	ON b.flight_id = f.flight_id
+JOIN airport arr
+	ON f.arriving_airport_id = arr.airport_id
+WHERE p.date_of_birth > CURRENT_DATE - INTERVAL '18 years';
+--8)
+SELECT
+	CONCAT(p.first_name, ' ', p.last_name) AS full_name,
+	p.passport_number,
+	f.sch_arrival_time AS arrival_time
+FROM passengers p
+JOIN booking b
+	ON p.passenger_id = b.passenger_id
+JOIN flights f
+	ON b.flight_id = f.flight_id;
+--9)
+SELECT
+	dep.country AS airport_country,
+	al.airline_name,
+	f.flight_id,
+	dep.airport_name AS departure_airport
+FROM flights f
+JOIN airline al
+	ON f.airline_id = al.airline_id
+JOIN airport dep
+	ON f.departing_airport_id = dep.airport_id
+WHERE al.airline_country = dep.country
+ORDER BY dep.country, al.airline_name;
+--10)
+SELECT
+	f.flight_id,
+	al.airline_name,
+	dep.airport_name AS departure_airport,
+	arr.airport_name AS arrival_airport
+FROM flights f
+JOIN airline al
+	ON f.airline_id = al.airline_id
+JOIN airport dep
+	ON f.departing_airport_id = dep.airport_id
+JOIN airport arr
+	ON f.arriving_airport_id = arr.airport_id
+ORDER BY f.flight_id;
+--11)
+SELECT
+	CONCAT(p.first_name, ' ', p.last_name) AS full_name,
+	f.flight_id,
+	al.airline_name
+FROM passengers p
+JOIN booking b
+	ON p.passenger_id = b.passenger_id
+JOIN flights f
+	ON b.flight_id = f.flight_id
+JOIN airline al
+	ON f.airline_id = al.airline_id
+WHERE al.airline_name = 'Air Astana';
+--12)
+SELECT
+	f.flight_id,
+	arr.country AS destination_country,
+	COUNT(b.passenger_id) AS passenger_count
+FROM flights f
+JOIN airport arr
+	ON f.arriving_airport_id = arr.airport_id
+LEFT JOIN booking b
+	ON f.flight_id = b.flight_id
+GROUP BY
+	f.flight_id,
+	arr.country
+ORDER BY f.flight_id;
+--13)
+SELECT
+	p.passenger_id,
+	p.first_name,
+	p.last_name,
+	p.passport_number
+FROM passenger p
+LEFT JOIN booking b
+	ON p.passenger_id = b.passenger_id
+WHERE b.booking_id IS NULL;
+--14)
+SELECT
+	al.airline_id,
+	al.airline_name,
+	COUNT(f.flight_id) AS total_flights
+FROM airline al
+LEFT JOIN flights f
+	ON al.airline_id = f.airline_id
+GROUP BY
+	al.airline_id,
+	al.airline_name
+ORDER BY al.airline_id;
+--15)
+SELECT
+	al.airline_name,
+	f.flight_id,
+	dep.city AS departure_city,
+	dep.airport_name AS departure_airport
+FROM flights f
+JOIN airline al
+	ON f.airline_id = al.airline_id
+JOIN airport dep
+	ON f.departing_airport_id = dep.airport_id
+WHERE dep.country = 'Kazakhstan'
+ORDER BY f.flight_id;
