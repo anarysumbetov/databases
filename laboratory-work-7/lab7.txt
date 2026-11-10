@@ -1,0 +1,220 @@
+--1)
+CREATE INDEX idx_flights_actual_departure
+ON flights(act_departure_time);
+--2)
+CREATE UNIQUE INDEX idx_flights_departure_unique
+ON flights(sch_departure_time, airline_id);
+--3)
+CREATE INDEX idx_flights_airports
+ON flights(departing_airport_id, arriving_airport_id);
+--4)
+DROP INDEX IF EXISTS idx_flights_airports;
+EXPLAIN ANALYZE
+SELECT *
+FROM flights
+WHERE departing_airport_id = 1
+AND arriving_airport_id = 2;
+CREATE INDEX idx_flights_airports
+ON flights(departing_airport_id, arriving_airport_id);
+EXPLAIN ANALYZE
+SELECT *
+FROM flights
+WHERE departing_airport_id = 1
+AND arriving_airport_id = 2;
+--5)
+EXPLAIN ANALYZE
+SELECT *
+FROM flights
+WHERE departing_airport_id = 1
+AND arriving_airport_id = 2;
+--6)
+CREATE UNIQUE INDEX idx_passengers_passport_number
+ON passengers(passport_number);
+
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE tablename = 'passengers';
+
+INSERT INTO passengers
+(passenger_id, first_name, last_name, date_of_birth,
+gender, country_of_citizenship, country_of_residence,
+passport_number, created_at, updated_at)
+VALUES
+(1001, 'John', 'Smith', '1990-05-12',
+'Male', 'USA', 'USA', 'TEST1001',
+NOW(), NOW()),
+(1002, 'Anna', 'Brown', '1992-08-20',
+'Female', 'Canada', 'Canada', 'TEST1002',
+NOW(), NOW());
+
+INSERT INTO passengers
+(passenger_id, first_name, last_name, date_of_birth,
+gender, country_of_citizenship, country_of_residence,
+passport_number, created_at, updated_at)
+VALUES
+(1003, 'Peter', 'Green', '1995-03-10',
+'Male', 'UK', 'UK', 'TEST1001',
+NOW(), NOW());
+
+--7)
+CREATE INDEX idx_passengers_details
+ON passengers(first_name, last_name, date_of_birth, country_of_citizenship);
+
+EXPLAIN ANALYZE
+SELECT *
+FROM passengers
+WHERE country_of_citizenship = 'Philippines'
+AND date_of_birth >= '1984-01-01'
+AND date_of_birth < '1985-01-01';
+
+--8)
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE tablename = 'passengers';
+DROP INDEX IF EXISTS idx_passengers_details;
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE tablename = 'passengers';
+
+--9)
+EXPLAIN ANALYZE
+SELECT *
+FROM booking
+WHERE passenger_id = 100;
+CREATE INDEX idx_booking_passenger_id
+ON booking(passenger_id);
+EXPLAIN ANALYZE
+SELECT *
+FROM booking
+WHERE passenger_id = 100;
+
+--10)
+CREATE INDEX idx_booking_flight
+ON booking_flight (booking_id, flight_id);
+
+SELECT 
+	f.flight_id,
+	b.price
+FROM booking b
+JOIN booking_flight bf
+	ON b.booking_id = bf.booking_id
+JOIN flights f
+	ON bf.flight_id = f.flight_id
+WHERE b.price > 9000;
+
+EXPLAIN ANALYZE
+SELECT
+	f.flight_Id,
+	b.price
+FROM booking b
+JOIN booking_flight bf
+	ON b.booking_id = bf.booking_id
+JOIN flights f
+	ON bf.flight_id = f.flight_id
+WHERE b.price > 9000;
+
+--11)
+CREATE INDEX idx_booking_status
+ON booking(status);
+
+EXPLAIN ANALYZE
+SELECT *
+FROM booking
+WHERE status = 'Departed';
+
+EXPLAIN ANALYZE
+SELECT *
+FROM booking
+WHERE status = 'Boarding';
+
+--12)
+CREATE INDEX idx_baggage_weight
+ON baggage(weight_in_kg);
+
+EXPLAIN ANALYZE
+SELECT *
+FROM baggage
+WHERE weight_in_kg > 49;
+
+EXPLAIN ANALYZE
+SELECT *
+FROM baggage
+WHERE weight_in_kg > 5;
+
+
+--13)
+CREATE INDEX idx_airport_name
+ON airport(airport_name);
+
+EXPLAIN ANALYZE
+SELECT *
+FROM airport
+WHERE airport_name LIKE 'A%';
+
+EXPLAIN ANALYZE
+SELECT *
+FROM airport
+WHERE airport_name LIKE '%Airport';
+
+--14)
+CREATE INDEX idx_airport_country_city
+ON airport(country, city);
+EXPLAIN ANALYZE
+SELECT *
+FROM airport
+WHERE country = 'Kazakhstan';
+EXPLAIN ANALYZE
+SELECT *
+FROM airport
+WHERE city = 'Almaty';
+EXPLAIN ANALYZE
+SELECT *
+FROM airport
+WHERE country = 'Kazakhstan'
+AND city = 'Almaty';
+
+--15)
+CREATE INDEX idx_passengers_lower_lastname
+ON passengers (LOWER(last_name));
+EXPLAIN ANALYZE
+SELECT *
+FROM passengers
+WHERE LOWER(last_name) = 'irnis';
+EXPLAIN ANALYZE
+SELECT *
+FROM passengers
+WHERE last_name = 'Irnis';
+
+--16)
+CREATE INDEX idx_booking_passenger_price
+ON booking(passenger_id, price);
+EXPLAIN ANALYZE
+SELECT price
+FROM booking
+WHERE passenger_id = 100;
+
+--17
+CREATE UNIQUE INDEX idx_airline_code_unique
+ON airline(airline_code);
+
+SELECT
+	airline_code,
+	COUNT(*) AS duplicate_count
+FROM airline
+GROUP BY airline_code
+HAVING COUNT(*) > 1;
+
+SELECT *
+FROM airline
+WHERE airline_code = 'KAZ';
+
+UPDATE airline
+SET airline_code = 'KZA'
+WHERE airline_id = 6;
+
+CREATE UNIQUE INDEX idx_airline_code_unique
+ON airline(airline_code);
+
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE tablename = 'airline';
